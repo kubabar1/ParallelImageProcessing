@@ -32,3 +32,17 @@ application {
     // Define the main class for the application.
     mainClassName = 'ParallelImageProcessing.App'
 }
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': mainClassName
+        )
+    }
+}
+
+task runProgram(type: JavaExec) {
+    classpath = files('build/libs/ParallelImageProcessing.jar')
+    classpath += sourceSets.main.runtimeClasspath
+    main = mainClassName
+}
