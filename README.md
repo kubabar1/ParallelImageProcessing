@@ -1,2 +1,2 @@
 # ParallelImageProcessing
-Simple image processing program using Java Fork Join framework, created for the "Concurrent and object-oriented programming" laboratories.
+A simple image processing program using Java Fork Join framework, created for the "Concurrent and object-oriented programming" laboratories.
