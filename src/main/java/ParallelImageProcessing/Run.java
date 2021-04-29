@@ -3,42 +3,47 @@ package ParallelImageProcessing;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.logging.Logger;
 
 import static ParallelImageProcessing.ForkBlur.blur;
 
 public class Run {
 
-//    public static void main(String[] args) {
-//        LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-//        config.width = 128;
-//        config.height = 256;
-//        config.title = "Mandelbrot";
-//        new LwjglApplication(new Thread7ForkJoinMadelbrot(), config);
-//    }
+    private static final Logger logger = Logger.getLogger(Run.class.getName());
 
-    // Plumbing follows.
     public static void main(String[] args) throws Exception {
-        String resourceName = "red-tulips.jpg";
-        URL res = Run.class.getClassLoader().getResource(resourceName);
-        File resourceFile = Paths.get(res.toURI()).toFile();
+        String sourceImagePath = "red-tulips.jpg";
+        String outputFormat = "png";
+        String destinationImageName = "results/blurred-tulips." + outputFormat;
 
-        BufferedImage image = ImageIO.read(resourceFile);
+        BufferedImage sourceImage = readImage(sourceImagePath);
+        logger.info(() -> "Source image  " + sourceImagePath + " loaded.");
 
-        System.out.println("Source image: " + resourceName);
+        BufferedImage blurredImage = blur(sourceImage);
+        saveImage(blurredImage, outputFormat, destinationImageName);
+        logger.info(() -> "Saved blurred image as " + destinationImageName);
+    }
 
-        BufferedImage blurredImage = blur(image);
+    private static BufferedImage readImage(String imagePath) throws URISyntaxException, IOException {
+        URL res = Run.class.getClassLoader().getResource(imagePath);
+        File resourceFile = Paths
+                .get(Objects.requireNonNull(res, "Resource " + imagePath + " does not exist").toURI())
+                .toFile();
+        return ImageIO.read(resourceFile);
+    }
 
-        String dstName = "results/blurred-tulips.png";
-        File dstFile = new File(dstName);
+    private static void saveImage(BufferedImage image, String format, String path) throws IOException {
+        File dstFile = new File(path);
         File parent = dstFile.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
             throw new IllegalStateException("Couldn't create dir: " + parent);
         }
-        ImageIO.write(blurredImage, "png", dstFile);
-
-        System.out.println("Output image: " + dstName);
+        ImageIO.write(image, format, dstFile);
     }
 
 

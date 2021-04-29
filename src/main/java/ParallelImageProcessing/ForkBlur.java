@@ -3,51 +3,53 @@ package ParallelImageProcessing;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.logging.Logger;
 
 public class ForkBlur extends RecursiveAction {
 
-    private final int[] mSource;
+    private static final Logger logger = Logger.getLogger(ForkBlur.class.getName());
 
-    private final int mStart;
+    protected static final int DIRECT_COMPUTING_THRESHOLD = 10000;
+    protected static final int BLUR_WIDTH = 15;
 
-    private final int mLength;
+    private final int[] sourcePixels;
+    private final int startIndex;
+    private final int numOfPixelsToBlur;
+    private final int[] blurredPixels;
 
-    private final int[] mDestination;
-
-    private final int mBlurWidth = 15;
-
-
-    public ForkBlur(int[] src, int start, int length, int[] dst) {
-        mSource = src;
-        mStart = start;
-        mLength = length;
-        mDestination = dst;
+    public ForkBlur(int[] sourcePixels, int numOfPixelsToBlur, int[] blurredPixels) {
+        this(sourcePixels, 0, numOfPixelsToBlur, blurredPixels);
     }
 
-    // Average pixels from source, write results into destination.
+    public ForkBlur(int[] sourcePixels, int startIndex, int numOfPixelsToBlur, int[] blurredPixels) {
+        this.sourcePixels = sourcePixels;
+        this.startIndex = startIndex;
+        this.numOfPixelsToBlur = numOfPixelsToBlur;
+        this.blurredPixels = blurredPixels;
+    }
+
     protected void computeDirectly() {
-        int sidePixels = (mBlurWidth - 1) / 2;
-        for (int index = mStart; index < mStart + mLength; index++) {
+        int sidePixels = (BLUR_WIDTH - 1) / 2;
+        for (int index = startIndex; index < startIndex + numOfPixelsToBlur; index++) {
+
             // Calculate average.
-            float rt = 0, gt = 0, bt = 0;
-            for (int mi = -sidePixels; mi <= sidePixels; mi++) {
-                int mindex = Math.min(Math.max(mi + index, 0), mSource.length - 1);
-                int pixel = mSource[mindex];
-                rt += (float) ((pixel & 0x00ff0000) >> 16) / mBlurWidth;
-                gt += (float) ((pixel & 0x0000ff00) >> 8) / mBlurWidth;
-                bt += (float) ((pixel & 0x000000ff) >> 0) / mBlurWidth;
+            float red = 0, green = 0, blue = 0;
+            for (int i = -sidePixels; i <= sidePixels; i++) {
+                int idx = Math.min(Math.max(i + index, 0), sourcePixels.length - 1);
+                int pixel = sourcePixels[idx];
+                red += (float) ((pixel & 0x00ff0000) >> 16) / BLUR_WIDTH;
+                green += (float) ((pixel & 0x0000ff00) >> 8) / BLUR_WIDTH;
+                blue += (float) (pixel & 0x000000ff) / BLUR_WIDTH;
             }
 
-            // Re-assemble destination pixel.
-            int dpixel = (0xff000000)
-                    | (((int) rt) << 16)
-                    | (((int) gt) << 8)
-                    | (((int) bt) << 0);
-            mDestination[index] = dpixel;
+            // Re-assemble blurred pixel.
+            int blurredPixel = (0xff000000)
+                    | (((int) red) << 16)
+                    | (((int) green) << 8)
+                    | ((int) blue);
+            blurredPixels[index] = blurredPixel;
         }
     }
-
-    protected static int sThreshold = 10000;
 
     /**
      * compute() method performs the blur directly or splits it into two smaller tasks.
@@ -55,43 +57,37 @@ public class ForkBlur extends RecursiveAction {
      */
     @Override
     protected void compute() {
-        if (mLength < sThreshold) {
+        if (numOfPixelsToBlur < DIRECT_COMPUTING_THRESHOLD) {
             computeDirectly();
             return;
         }
-        int split = mLength / 2;
-        invokeAll(new ForkBlur(mSource, mStart, split, mDestination),
-                new ForkBlur(mSource, mStart + split, mLength - split, mDestination));
+        int numOfPixelsToBeBlurred = this.numOfPixelsToBlur / 2;
+        invokeAll(new ForkBlur(sourcePixels, startIndex, numOfPixelsToBeBlurred, blurredPixels),
+                new ForkBlur(sourcePixels, startIndex + numOfPixelsToBeBlurred, this.numOfPixelsToBlur - numOfPixelsToBeBlurred, blurredPixels));
     }
 
 
     public static BufferedImage blur(BufferedImage srcImage) {
-        int w = srcImage.getWidth();
-        int h = srcImage.getHeight();
+        int width = srcImage.getWidth();
+        int height = srcImage.getHeight();
 
-        int[] src = srcImage.getRGB(0, 0, w, h, null, 0, w);
-        int[] dst = new int[src.length];
+        int[] sourcePixels = srcImage.getRGB(0, 0, width, height, null, 0, width);
+        int[] blurredPixels = new int[sourcePixels.length];
 
-        System.out.println("Array size is " + src.length);
-        System.out.println("Threshold is " + sThreshold);
+        logger.info(() -> "Image array size: " + sourcePixels.length);
+        logger.info(() -> "Direct computing threshold: " + DIRECT_COMPUTING_THRESHOLD);
+        logger.info(() -> "Blur width: " + BLUR_WIDTH);
 
         int processors = Runtime.getRuntime().availableProcessors();
-        System.out.println(processors + " processor" + (processors != 1 ? "s are " : " is ") + "available");
-
-        ForkBlur fb = new ForkBlur(src, 0, src.length, dst);
-
-        ForkJoinPool pool = new ForkJoinPool();
-
+        logger.info(() -> "Running blurring using " + processors + (processors != 1 ? " processors" : " processor"));
         long startTime = System.currentTimeMillis();
-        pool.invoke(fb);
+        new ForkJoinPool().invoke(new ForkBlur(sourcePixels, sourcePixels.length, blurredPixels));
         long endTime = System.currentTimeMillis();
+        logger.info(() -> "Image blur took " + (endTime - startTime) + " milliseconds.");
 
-        System.out.println("Image blur took " + (endTime - startTime) + " milliseconds.");
-
-        BufferedImage dstImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        dstImage.setRGB(0, 0, w, h, dst, 0, w);
-
-        return dstImage;
+        BufferedImage blurredImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        blurredImage.setRGB(0, 0, width, height, blurredPixels, 0, width);
+        return blurredImage;
     }
 
 }
