@@ -6,14 +6,20 @@ plugins {
 repositories {
     jcenter()
 }
+ext.commomLibs = [
+        'gdxVersion': '1.10.0'
+]
 
 dependencies {
-    implementation 'com.google.guava:guava:29.0-jre'
-    testImplementation 'junit:junit:4.13'
+    implementation "com.google.guava:guava:29.0-jre"
+    implementation "com.badlogicgames.gdx:gdx:$commomLibs.gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-platform:$commomLibs.gdxVersion:natives-desktop"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl:$commomLibs.gdxVersion"
+    testImplementation "junit:junit:4.13"
 }
 
 application {
-    mainClassName = 'ParallelImageProcessing.App'
+    mainClassName = 'ParallelImageProcessing.Run'
 }
 
 jar {
@@ -22,10 +28,4 @@ jar {
                 'Main-Class': mainClassName
         )
     }
-}
-
-task runProgram(type: JavaExec) {
-    classpath = files('build/libs/ParallelImageProcessing.jar')
-    classpath += sourceSets.main.runtimeClasspath
-    main = mainClassName
 }
