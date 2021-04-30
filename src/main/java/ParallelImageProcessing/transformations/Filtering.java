@@ -1,7 +1,7 @@
 package ParallelImageProcessing.transformations;
 
 import ParallelImageProcessing.transformations.actions.BlurAction;
-import ParallelImageProcessing.transformations.actions.SobelAction;
+import ParallelImageProcessing.transformations.actions.ConvolutionAction;
 
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ForkJoinPool;
@@ -17,6 +17,25 @@ public class Filtering {
         SobelType(int[] kernel) {
             this.kernel = kernel;
         }
+    }
+
+    public enum LaplacianType {
+        LAPLACIAN(new int[]{0, -1, 0, -1, 4, -1, 0, -1, 0}),
+        LAPLACIAN_DIAGONAL(new int[]{-1, -1, -1, -1, 8, -1, -1, -1, -1});
+
+        int[] kernel;
+
+        LaplacianType(int[] kernel) {
+            this.kernel = kernel;
+        }
+    }
+
+    public static BufferedImage sobel(BufferedImage srcImage, SobelType sobelMatrix) {
+        return convolution(srcImage, sobelMatrix.kernel);
+    }
+
+    public static BufferedImage laplacian(BufferedImage srcImage, LaplacianType laplacianMatrix) {
+        return convolution(srcImage, laplacianMatrix.kernel);
     }
 
     public static BufferedImage blur(BufferedImage srcImage, int blurWidth) {
@@ -45,7 +64,7 @@ public class Filtering {
         return dstImage;
     }
 
-    public static BufferedImage sobel(BufferedImage srcImage, SobelType sobelMatrix) {
+    private static BufferedImage convolution(BufferedImage srcImage, int[] convolutionMatrix) {
         int width = srcImage.getWidth();
         int height = srcImage.getHeight();
         int threshold = 100;
@@ -53,14 +72,14 @@ public class Filtering {
         int[] src = srcImage.getRGB(0, 0, width, height, null, 0, width);
         int[] dst = new int[src.length];
 
-        SobelAction sobelAction = new SobelAction(srcImage, 0, 0, width, height, dst, sobelMatrix.kernel, threshold);
+        ConvolutionAction convolutionAction = new ConvolutionAction(srcImage, 0, 0, width, height, dst, convolutionMatrix, threshold);
         ForkJoinPool pool = new ForkJoinPool();
 
         long startTime = System.currentTimeMillis();
-        pool.invoke(sobelAction);
+        pool.invoke(convolutionAction);
         long endTime = System.currentTimeMillis();
 
-        BufferedImage dstImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage dstImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
         dstImage.setRGB(0, 0, width, height, dst, 0, width);
 
         System.out.println("Threshold: " + threshold);

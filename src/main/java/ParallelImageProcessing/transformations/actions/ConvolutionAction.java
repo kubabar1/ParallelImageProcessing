@@ -5,7 +5,7 @@ import java.util.concurrent.RecursiveAction;
 
 import static java.lang.Math.sqrt;
 
-public class SobelAction extends RecursiveAction {
+public class ConvolutionAction extends RecursiveAction {
 
     private final BufferedImage source;
 
@@ -25,7 +25,7 @@ public class SobelAction extends RecursiveAction {
 
     private static final int black = 0xff000000;
 
-    public SobelAction(BufferedImage source, int startX, int startY, int lengthX, int lengthY, int[] dst, int[] sobelMatrix, int threshold) {
+    public ConvolutionAction(BufferedImage source, int startX, int startY, int lengthX, int lengthY, int[] dst, int[] sobelMatrix, int threshold) {
         this.source = source;
         this.startX = startX;
         this.startY = startY;
@@ -76,10 +76,10 @@ public class SobelAction extends RecursiveAction {
             int splitX = this.lengthX / 2;
             int splitY = this.lengthY / 2;
             invokeAll(
-                    new SobelAction(this.source, this.startX, this.startY, splitX, splitY, this.dst, this.sobelMatrix, this.threshold),
-                    new SobelAction(this.source, this.startX + splitX, this.startY, this.lengthX - splitX, splitY, this.dst, this.sobelMatrix, this.threshold),
-                    new SobelAction(this.source, this.startX, this.startY + splitY, splitX, this.lengthY - splitY, this.dst, this.sobelMatrix, this.threshold),
-                    new SobelAction(this.source, this.startX + splitX, this.startY + splitY, this.lengthX - splitX, this.lengthY - splitY, this.dst, this.sobelMatrix, this.threshold)
+                    new ConvolutionAction(this.source, this.startX, this.startY, splitX, splitY, this.dst, this.sobelMatrix, this.threshold),
+                    new ConvolutionAction(this.source, this.startX + splitX, this.startY, this.lengthX - splitX, splitY, this.dst, this.sobelMatrix, this.threshold),
+                    new ConvolutionAction(this.source, this.startX, this.startY + splitY, splitX, this.lengthY - splitY, this.dst, this.sobelMatrix, this.threshold),
+                    new ConvolutionAction(this.source, this.startX + splitX, this.startY + splitY, this.lengthX - splitX, this.lengthY - splitY, this.dst, this.sobelMatrix, this.threshold)
             );
         }
     }

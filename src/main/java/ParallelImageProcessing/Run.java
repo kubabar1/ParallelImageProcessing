@@ -11,8 +11,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Objects;
 
-import static ParallelImageProcessing.transformations.Filtering.blur;
-import static ParallelImageProcessing.transformations.Filtering.sobel;
+import static ParallelImageProcessing.transformations.Filtering.*;
 
 
 public class Run {
@@ -20,14 +19,25 @@ public class Run {
     public static void main(String[] args) {
         String resourceName = "red_tulips.jpg";
         String blurDestinationPath = "results/blurred_red_tulips.png";
-        String sobelDestinationPath = "results/sobel_red_tulips.png";
+        String sobelHorizontalDestinationPath = "results/sobel_horizontal_red_tulips.png";
+        String sobelVerticalDestinationPath = "results/sobel_vertical_red_tulips.png";
+        String laplacianDestinationPath = "results/laplacian_red_tulips.png";
+        String laplacianDiagonalDestinationPath = "results/laplacian_diagonal_red_tulips.png";
 
         try {
             BufferedImage inputImage = getImageFromResources(resourceName);
+
             BufferedImage blurredImage = blur(inputImage, 9);
-            BufferedImage sobelImage = sobel(inputImage, Filtering.SobelType.VERTICAL);
+            BufferedImage sobelHorizontalImage = sobel(inputImage, Filtering.SobelType.HORIZONTAL);
+            BufferedImage sobelVerticalImage = sobel(inputImage, Filtering.SobelType.VERTICAL);
+            BufferedImage laplacianVerticalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN);
+            BufferedImage laplacianDiagonalVerticalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN_DIAGONAL);
+
             saveImage(blurredImage, blurDestinationPath);
-            saveImage(sobelImage, sobelDestinationPath);
+            saveImage(sobelHorizontalImage, sobelHorizontalDestinationPath);
+            saveImage(sobelVerticalImage, sobelVerticalDestinationPath);
+            saveImage(laplacianVerticalImage, laplacianDestinationPath);
+            saveImage(laplacianDiagonalVerticalImage, laplacianDiagonalDestinationPath);
         } catch (Exception e) {
             System.err.println("Cannot process image: " + e.getMessage());
         }
