@@ -1,5 +1,7 @@
 package ParallelImageProcessing;
 
+import ParallelImageProcessing.transformations.Filtering;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -10,18 +12,22 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 import static ParallelImageProcessing.transformations.Filtering.blur;
+import static ParallelImageProcessing.transformations.Filtering.sobel;
 
 
 public class Run {
 
     public static void main(String[] args) {
-        String resourceName = "red-tulips.jpg";
-        String destinationPath = "results/blurred-tulips.png";
+        String resourceName = "red_tulips.jpg";
+        String blurDestinationPath = "results/blurred_red_tulips.png";
+        String sobelDestinationPath = "results/sobel_red_tulips.png";
 
         try {
             BufferedImage inputImage = getImageFromResources(resourceName);
-            BufferedImage blurredImage = blur(inputImage, 19);
-            saveImage(blurredImage, destinationPath);
+            BufferedImage blurredImage = blur(inputImage, 9);
+            BufferedImage sobelImage = sobel(inputImage, Filtering.SobelType.VERTICAL);
+            saveImage(blurredImage, blurDestinationPath);
+            saveImage(sobelImage, sobelDestinationPath);
         } catch (Exception e) {
             System.err.println("Cannot process image: " + e.getMessage());
         }
