@@ -15,7 +15,7 @@ public class Run {
 
     public static void main(String[] args) {
         Run run = new Run();
-        String fileName = "rocks.jpg";
+        String fileName = "lena_gray.jpg";
         String outputFileName = FilenameUtils.removeExtension(fileName) + ".png";
         String resourcePath = "/" + fileName;
         String blurDestinationPath = "results/blurred_" + outputFileName;

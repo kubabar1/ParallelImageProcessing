@@ -26,9 +26,6 @@ public class BlurAction extends RecursiveAction {
         this.threshold = threshold;
     }
 
-    /**
-     * Average pixels from source, write results into destination.
-     */
     protected void computeDirectly() {
         int sidePixels = (this.blurWidth - 1) / 2;
         for (int index = this.start; index < this.start + this.length; index++) {
@@ -50,9 +47,6 @@ public class BlurAction extends RecursiveAction {
     }
 
 
-    /**
-     * Perform blur directly or split it into two smaller tasks.
-     */
     @Override
     protected void compute() {
         if (this.length < this.threshold) {
