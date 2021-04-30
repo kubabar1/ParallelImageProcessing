@@ -9,8 +9,16 @@ import java.util.concurrent.ForkJoinPool;
 public class Filtering {
 
     public enum SobelType {
-        HORIZONTAL(new int[]{-1, -2, -1, 0, 0, 0, 1, 2, 1}),
-        VERTICAL(new int[]{-1, 0, 1, -2, 0, 2, -1, 0, 1});
+        HORIZONTAL(new int[]{
+                -1, -2, -1,
+                0, 0, 0,
+                1, 2, 1
+        }),
+        VERTICAL(new int[]{
+                -1, 0, 1,
+                -2, 0, 2,
+                -1, 0, 1
+        });
 
         int[] kernel;
 
@@ -20,8 +28,23 @@ public class Filtering {
     }
 
     public enum LaplacianType {
-        LAPLACIAN(new int[]{0, -1, 0, -1, 4, -1, 0, -1, 0}),
-        LAPLACIAN_DIAGONAL(new int[]{-1, -1, -1, -1, 8, -1, -1, -1, -1});
+        LAPLACIAN(new int[]{
+                0, -1, 0,
+                -1, 4, -1,
+                0, -1, 0
+        }),
+        LAPLACIAN_DIAGONAL(new int[]{
+                -1, -1, -1,
+                -1, 8, -1,
+                -1, -1, -1
+        }),
+        LAPLACIAN_GAUSSIAN(new int[]{
+                0, 0, -1, 0, 0,
+                0, -1, -2, -1, 0,
+                -1, -2, 16, -2, -1,
+                0, -1, -2, -1, 0,
+                0, 0, -1, 0, 0
+        });
 
         int[] kernel;
 
@@ -85,7 +108,7 @@ public class Filtering {
         System.out.println("Threshold: " + threshold);
         System.out.println("Array size: " + src.length);
         System.out.println("Available processors count: " + Runtime.getRuntime().availableProcessors());
-        System.out.println("Image sobel took " + (endTime - startTime) + " milliseconds.");
+        System.out.println("Convolution took " + (endTime - startTime) + " milliseconds.");
 
         return dstImage;
     }

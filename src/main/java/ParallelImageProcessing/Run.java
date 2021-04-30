@@ -23,6 +23,7 @@ public class Run {
         String sobelVerticalDestinationPath = "results/sobel_vertical_red_tulips.png";
         String laplacianDestinationPath = "results/laplacian_red_tulips.png";
         String laplacianDiagonalDestinationPath = "results/laplacian_diagonal_red_tulips.png";
+        String laplacianGaussianDestinationPath = "results/laplacian_gaussian_red_tulips.png";
 
         try {
             BufferedImage inputImage = getImageFromResources(resourceName);
@@ -30,16 +31,19 @@ public class Run {
             BufferedImage blurredImage = blur(inputImage, 9);
             BufferedImage sobelHorizontalImage = sobel(inputImage, Filtering.SobelType.HORIZONTAL);
             BufferedImage sobelVerticalImage = sobel(inputImage, Filtering.SobelType.VERTICAL);
-            BufferedImage laplacianVerticalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN);
-            BufferedImage laplacianDiagonalVerticalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN_DIAGONAL);
+            BufferedImage laplacianImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN);
+            BufferedImage laplacianDiagonalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN_DIAGONAL);
+            BufferedImage laplacianGaussianImage = laplacian(inputImage, LaplacianType.LAPLACIAN_GAUSSIAN);
 
             saveImage(blurredImage, blurDestinationPath);
             saveImage(sobelHorizontalImage, sobelHorizontalDestinationPath);
             saveImage(sobelVerticalImage, sobelVerticalDestinationPath);
-            saveImage(laplacianVerticalImage, laplacianDestinationPath);
-            saveImage(laplacianDiagonalVerticalImage, laplacianDiagonalDestinationPath);
+            saveImage(laplacianImage, laplacianDestinationPath);
+            saveImage(laplacianDiagonalImage, laplacianDiagonalDestinationPath);
+            saveImage(laplacianGaussianImage, laplacianGaussianDestinationPath);
         } catch (Exception e) {
             System.err.println("Cannot process image: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

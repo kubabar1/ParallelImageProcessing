@@ -50,7 +50,7 @@ public class ConvolutionAction extends RecursiveAction {
                         int mmiX = idX + miX;
                         int mmiY = idY + miY;
                         int pixel = mmiX < 0 || mmiX >= sourceWidth || mmiY < 0 || mmiY >= sourceHeight ? black : this.source.getRGB(mmiX, mmiY);
-                        int sobelPixel = this.sobelMatrix[(miX + 1) * sobelMatrixWidth + (miY + 1)];
+                        int sobelPixel = this.sobelMatrix[(miX + sidePixels) * sobelMatrixWidth + (miY + sidePixels)];
                         reed += (float) ((pixel & 0x00ff0000) >> 16) * sobelPixel;
                         green += (float) ((pixel & 0x0000ff00) >> 8) * sobelPixel;
                         blue += (float) ((pixel & 0x000000ff)) * sobelPixel; // >> 0
