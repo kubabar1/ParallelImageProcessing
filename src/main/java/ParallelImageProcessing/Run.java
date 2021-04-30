@@ -1,15 +1,12 @@
 package ParallelImageProcessing;
 
 import ParallelImageProcessing.transformations.Filtering;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Objects;
 
 import static ParallelImageProcessing.transformations.Filtering.*;
 
@@ -17,50 +14,44 @@ import static ParallelImageProcessing.transformations.Filtering.*;
 public class Run {
 
     public static void main(String[] args) {
-        String resourceName = "red_tulips.jpg";
-        String blurDestinationPath = "results/blurred_red_tulips.png";
-        String sobelHorizontalDestinationPath = "results/sobel_horizontal_red_tulips.png";
-        String sobelVerticalDestinationPath = "results/sobel_vertical_red_tulips.png";
-        String laplacianDestinationPath = "results/laplacian_red_tulips.png";
-        String laplacianDiagonalDestinationPath = "results/laplacian_diagonal_red_tulips.png";
-        String laplacianGaussianDestinationPath = "results/laplacian_gaussian_red_tulips.png";
+        Run run = new Run();
+        String fileName = "rocks.jpg";
+        String outputFileName = FilenameUtils.removeExtension(fileName) + ".png";
+        String resourcePath = "/" + fileName;
+        String blurDestinationPath = "results/blurred_" + outputFileName;
+        String sobelHorizontalDestinationPath = "results/sobel_horizontal_" + outputFileName;
+        String sobelVerticalDestinationPath = "results/sobel_vertical_" + outputFileName;
+        String laplacianDestinationPath = "results/laplacian_" + outputFileName;
+        String laplacianDiagonalDestinationPath = "results/laplacian_diagonal_" + outputFileName;
+        String laplacianGaussianDestinationPath = "results/laplacian_gaussian_" + outputFileName;
 
         try {
-            BufferedImage inputImage = getImageFromResources(resourceName);
+            BufferedImage inputImage = run.getImageFromResources(resourcePath);
 
             BufferedImage blurredImage = blur(inputImage, 9);
             BufferedImage sobelHorizontalImage = sobel(inputImage, Filtering.SobelType.HORIZONTAL);
             BufferedImage sobelVerticalImage = sobel(inputImage, Filtering.SobelType.VERTICAL);
             BufferedImage laplacianImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN);
             BufferedImage laplacianDiagonalImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN_DIAGONAL);
-            BufferedImage laplacianGaussianImage = laplacian(inputImage, LaplacianType.LAPLACIAN_GAUSSIAN);
+            BufferedImage laplacianGaussianImage = laplacian(inputImage, Filtering.LaplacianType.LAPLACIAN_GAUSSIAN);
 
-            saveImage(blurredImage, blurDestinationPath);
-            saveImage(sobelHorizontalImage, sobelHorizontalDestinationPath);
-            saveImage(sobelVerticalImage, sobelVerticalDestinationPath);
-            saveImage(laplacianImage, laplacianDestinationPath);
-            saveImage(laplacianDiagonalImage, laplacianDiagonalDestinationPath);
-            saveImage(laplacianGaussianImage, laplacianGaussianDestinationPath);
+            run.saveImage(blurredImage, blurDestinationPath);
+            run.saveImage(sobelHorizontalImage, sobelHorizontalDestinationPath);
+            run.saveImage(sobelVerticalImage, sobelVerticalDestinationPath);
+            run.saveImage(laplacianImage, laplacianDestinationPath);
+            run.saveImage(laplacianDiagonalImage, laplacianDiagonalDestinationPath);
+            run.saveImage(laplacianGaussianImage, laplacianGaussianDestinationPath);
         } catch (Exception e) {
             System.err.println("Cannot process image: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private static BufferedImage getImageFromResources(String resourceName) throws IOException {
-        URL res = Run.class.getClassLoader().getResource(resourceName);
-        try {
-            if (Objects.isNull(res)) {
-                throw new IOException("Cannot receive resource");
-            }
-            File resourceFile = Paths.get(res.toURI()).toFile();
-            return ImageIO.read(resourceFile);
-        } catch (URISyntaxException e) {
-            throw new IOException("Cannot create URI");
-        }
+    public BufferedImage getImageFromResources(String resourceName) throws IOException {
+        return ImageIO.read(getClass().getResourceAsStream(resourceName));
     }
 
-    private static void saveImage(BufferedImage outputImage, String outputFilePath) throws IOException {
+    public void saveImage(BufferedImage outputImage, String outputFilePath) throws IOException {
         File dstFile = new File(outputFilePath);
         File parent = dstFile.getParentFile();
         if (!parent.exists() && !parent.mkdirs()) {
